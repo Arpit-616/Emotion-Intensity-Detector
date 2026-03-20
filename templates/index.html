@@ -323,24 +323,18 @@
   <main class="shell">
     <section class="hero">
       <div class="eyebrow">Live Demo UI</div>
-      <h1>Emotion Intensity Detector</h1>
-      <p>
-        This page is a lightweight demo on top of your Flask API. Fill the reflection details,
-        submit once, and the prediction plus recommendation appears on the right.
-      </p>
+        <h1>Emotion Intensity Detector</h1>
+     
     </section>
 
     <section class="layout">
       <div class="card form-card">
-        <h2 class="section-title">Reflection Input</h2>
-        <p class="section-copy">All fields below map directly to the existing <code>/predict</code> API payload.</p>
 
         <form id="demo-form">
           <div class="grid">
             <div class="field full">
               <label for="journal_text">Journal Text</label>
               <textarea id="journal_text" name="journal_text" required>{{ demo_defaults.journal_text }}</textarea>
-              <div class="hint">Short reflections work, but a fuller sentence usually gives the model better signal.</div>
             </div>
 
             <div class="field">
@@ -426,7 +420,6 @@
 
       <aside class="card result-card">
         <h2 class="section-title">Demo Output</h2>
-        <p class="section-copy">The form calls <code>/predict</code> directly and renders the model response here.</p>
 
         <div class="pill-row">
           <div class="pill">GET /health</div>
@@ -463,10 +456,6 @@
         </div>
 
         <pre id="raw-output">No prediction yet.</pre>
-
-        <div class="footnote">
-          Tip: if the browser opens a different port than expected, use the exact URL printed in the Flask terminal when the app starts.
-        </div>
       </aside>
     </section>
   </main>
