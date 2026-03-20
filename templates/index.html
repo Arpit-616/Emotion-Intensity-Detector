@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Emotion Intensity Detector Demo</title>
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --panel: #fffaf2;
+      --panel-strong: #fff;
+      --ink: #1f2937;
+      --muted: #6b7280;
+      --line: #dccdb6;
+      --accent: #0f766e;
+      --accent-soft: #dff4ef;
+      --alert: #b45309;
+      --alert-soft: #fff0d7;
+      --error: #b91c1c;
+      --shadow: 0 18px 50px rgba(63, 43, 21, 0.12);
+      --radius: 22px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.12), transparent 24rem),
+        radial-gradient(circle at bottom right, rgba(180, 83, 9, 0.12), transparent 20rem),
+        linear-gradient(180deg, #f7f2e8 0%, #f0ece4 100%);
+      min-height: 100vh;
+    }
+
+    .shell {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+
+    .hero {
+      display: grid;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(15, 118, 110, 0.1);
+      color: var(--accent);
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 3.6rem);
+      line-height: 0.96;
+      max-width: 12ch;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 60ch;
+      color: var(--muted);
+      font-size: 1.02rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .card {
+      background: rgba(255, 250, 242, 0.88);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(220, 205, 182, 0.8);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .form-card {
+      padding: 24px;
+    }
+
+    .result-card {
+      padding: 24px;
+      position: sticky;
+      top: 20px;
+    }
+
+    .section-title {
+      margin: 0 0 8px;
+      font-size: 1.15rem;
+    }
+
+    .section-copy {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 0.96rem;
+    }
+
+    form {
+      display: grid;
+      gap: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 13px 14px;
+      font: inherit;
+      color: var(--ink);
+      background: var(--panel-strong);
+      transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.13);
+      transform: translateY(-1px);
+    }
+
+    textarea {
+      min-height: 146px;
+      resize: vertical;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.82rem;
+      margin-top: -2px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-top: 4px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 13px 18px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.7;
+      cursor: wait;
+      transform: none;
+    }
+
+    .primary {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 12px 24px rgba(15, 118, 110, 0.18);
+    }
+
+    .secondary {
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--ink);
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(31, 41, 55, 0.06);
+      color: var(--ink);
+      font-size: 0.84rem;
+      font-weight: 600;
+    }
+
+    .status {
+      margin: 0 0 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .status.error {
+      background: #fee2e2;
+      color: var(--error);
+    }
+
+    .status.loading {
+      background: #eef2ff;
+      color: #3730a3;
+    }
+
+    .results {
+      display: grid;
+      gap: 12px;
+    }
+
+    .metric {
+      display: grid;
+      gap: 4px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(220, 205, 182, 0.75);
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 0.78rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .metric strong {
+      font-size: 1.08rem;
+    }
+
+    .metric.alert {
+      background: var(--alert-soft);
+      border-color: rgba(180, 83, 9, 0.2);
+    }
+
+    pre {
+      margin: 14px 0 0;
+      padding: 14px;
+      background: #1f2937;
+      color: #f9fafb;
+      border-radius: 16px;
+      font-size: 0.84rem;
+      overflow: auto;
+      max-height: 260px;
+    }
+
+    .footnote {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 920px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .result-card {
+        position: static;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .shell {
+        padding: 22px 14px 36px;
+      }
+
+      .form-card,
+      .result-card {
+        padding: 18px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="eyebrow">Live Demo UI</div>
+      <h1>Emotion Intensity Detector</h1>
+      <p>
+        This page is a lightweight demo on top of your Flask API. Fill the reflection details,
+        submit once, and the prediction plus recommendation appears on the right.
+      </p>
+    </section>
+
+    <section class="layout">
+      <div class="card form-card">
+        <h2 class="section-title">Reflection Input</h2>
+        <p class="section-copy">All fields below map directly to the existing <code>/predict</code> API payload.</p>
+
+        <form id="demo-form">
+          <div class="grid">
+            <div class="field full">
+              <label for="journal_text">Journal Text</label>
+              <textarea id="journal_text" name="journal_text" required>{{ demo_defaults.journal_text }}</textarea>
+              <div class="hint">Short reflections work, but a fuller sentence usually gives the model better signal.</div>
+            </div>
+
+            <div class="field">
+              <label for="ambience_type">Ambience Type</label>
+              <select id="ambience_type" name="ambience_type" required>
+                {% for value in demo_options.ambience_type %}
+                <option value="{{ value }}" {% if value == demo_defaults.ambience_type %}selected{% endif %}>{{ value|replace('_', ' ')|title }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="time_of_day">Time of Day</label>
+              <select id="time_of_day" name="time_of_day" required>
+                {% for value in demo_options.time_of_day %}
+                <option value="{{ value }}" {% if value == demo_defaults.time_of_day %}selected{% endif %}>{{ value|replace('_', ' ')|title }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="duration_min">Duration (Minutes)</label>
+              <input id="duration_min" name="duration_min" type="number" min="1" max="180" value="{{ demo_defaults.duration_min }}" required>
+            </div>
+
+            <div class="field">
+              <label for="sleep_hours">Sleep Hours</label>
+              <input id="sleep_hours" name="sleep_hours" type="number" min="0" max="24" step="0.5" value="{{ demo_defaults.sleep_hours }}">
+            </div>
+
+            <div class="field">
+              <label for="energy_level">Energy Level (1-5)</label>
+              <select id="energy_level" name="energy_level" required>
+                {% for value in [1, 2, 3, 4, 5] %}
+                <option value="{{ value }}" {% if value == demo_defaults.energy_level %}selected{% endif %}>{{ value }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="stress_level">Stress Level (1-5)</label>
+              <select id="stress_level" name="stress_level" required>
+                {% for value in [1, 2, 3, 4, 5] %}
+                <option value="{{ value }}" {% if value == demo_defaults.stress_level %}selected{% endif %}>{{ value }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="previous_day_mood">Previous Day Mood</label>
+              <select id="previous_day_mood" name="previous_day_mood">
+                {% for value in demo_options.previous_day_mood %}
+                <option value="{{ value }}" {% if value == demo_defaults.previous_day_mood %}selected{% endif %}>{{ value|replace('_', ' ')|title }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="face_emotion_hint">Face Emotion Hint</label>
+              <select id="face_emotion_hint" name="face_emotion_hint">
+                {% for value in demo_options.face_emotion_hint %}
+                <option value="{{ value }}" {% if value == demo_defaults.face_emotion_hint %}selected{% endif %}>{{ value|replace('_', ' ')|title }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="reflection_quality">Reflection Quality</label>
+              <select id="reflection_quality" name="reflection_quality" required>
+                {% for value in demo_options.reflection_quality %}
+                <option value="{{ value }}" {% if value == demo_defaults.reflection_quality %}selected{% endif %}>{{ value|replace('_', ' ')|title }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="primary" id="submit-button" type="submit">Run Prediction</button>
+            <button class="secondary" type="reset">Reset Form</button>
+          </div>
+        </form>
+      </div>
+
+      <aside class="card result-card">
+        <h2 class="section-title">Demo Output</h2>
+        <p class="section-copy">The form calls <code>/predict</code> directly and renders the model response here.</p>
+
+        <div class="pill-row">
+          <div class="pill">GET /health</div>
+          <div class="pill">POST /predict</div>
+        </div>
+
+        <div id="status-box" class="status">Ready for a demo run.</div>
+
+        <div class="results">
+          <div class="metric">
+            <span>Predicted State</span>
+            <strong id="predicted_state">-</strong>
+          </div>
+          <div class="metric">
+            <span>Predicted Intensity</span>
+            <strong id="predicted_intensity">-</strong>
+          </div>
+          <div class="metric">
+            <span>Confidence</span>
+            <strong id="confidence">-</strong>
+          </div>
+          <div class="metric">
+            <span>What To Do</span>
+            <strong id="what_to_do">-</strong>
+          </div>
+          <div class="metric">
+            <span>When To Do It</span>
+            <strong id="when_to_do">-</strong>
+          </div>
+          <div class="metric alert">
+            <span>Uncertainty Flag</span>
+            <strong id="uncertain_flag">-</strong>
+          </div>
+        </div>
+
+        <pre id="raw-output">No prediction yet.</pre>
+
+        <div class="footnote">
+          Tip: if the browser opens a different port than expected, use the exact URL printed in the Flask terminal when the app starts.
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById('demo-form');
+    const submitButton = document.getElementById('submit-button');
+    const statusBox = document.getElementById('status-box');
+    const rawOutput = document.getElementById('raw-output');
+    const resultFields = [
+      'predicted_state',
+      'predicted_intensity',
+      'confidence',
+      'what_to_do',
+      'when_to_do',
+      'uncertain_flag'
+    ];
+
+    function setStatus(message, mode) {
+      statusBox.textContent = message;
+      statusBox.className = 'status' + (mode ? ` ${mode}` : '');
+    }
+
+    function setResults(data) {
+      resultFields.forEach((key) => {
+        const element = document.getElementById(key);
+        element.textContent = data[key] ?? '-';
+      });
+      rawOutput.textContent = JSON.stringify(data, null, 2);
+    }
+
+    function buildPayload() {
+      const formData = new FormData(form);
+      return {
+        journal_text: formData.get('journal_text'),
+        ambience_type: formData.get('ambience_type'),
+        time_of_day: formData.get('time_of_day'),
+        duration_min: Number(formData.get('duration_min')),
+        sleep_hours: formData.get('sleep_hours') === '' ? null : Number(formData.get('sleep_hours')),
+        energy_level: Number(formData.get('energy_level')),
+        stress_level: Number(formData.get('stress_level')),
+        previous_day_mood: formData.get('previous_day_mood'),
+        face_emotion_hint: formData.get('face_emotion_hint'),
+        reflection_quality: formData.get('reflection_quality')
+      };
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      submitButton.disabled = true;
+      setStatus('Running prediction...', 'loading');
+
+      try {
+        const response = await fetch('/predict', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(buildPayload())
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Prediction failed.');
+        }
+
+        setResults(data);
+        setStatus('Prediction completed successfully.', '');
+      } catch (error) {
+        setStatus(error.message, 'error');
+        rawOutput.textContent = String(error.message);
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
+
+    form.addEventListener('reset', () => {
+      window.setTimeout(() => {
+        setStatus('Form reset. Ready for another demo run.', '');
+        resultFields.forEach((key) => {
+          document.getElementById(key).textContent = '-';
+        });
+        rawOutput.textContent = 'No prediction yet.';
+      }, 0);
+    });
+  </script>
+</body>
+</html>

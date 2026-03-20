@@ -1,0 +1,16 @@
+{
+  "sklearn_version": "1.8.0",
+  "generated_at_utc": "2026-03-20T12:00:54.546008+00:00",
+  "artifacts": {
+    "model_state": "model_state.joblib",
+    "model_intensity": "model_intensity.joblib",
+    "tfidf": "tfidf.joblib",
+    "ordinal_encoder": "ordinal_encoder.joblib",
+    "scaler": "scaler.joblib"
+  },
+  "imputation": {
+    "sleep_hours_median": 6.0,
+    "previous_day_mood_fill": "unknown",
+    "face_emotion_hint_fill": "none"
+  }
+}
